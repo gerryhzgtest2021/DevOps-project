@@ -2,6 +2,7 @@
 locals {
   public_cidr_block  = ["10.0.0.0/24", "10.0.1.0/24"]
   private_cidr_block = ["10.0.2.0/24", "10.0.3.0/24"]
+  az            = ["us-east-1a", "us-east-1b"]
 }
 
 #Internet VPC
@@ -24,7 +25,7 @@ resource "aws_subnet" "main-public" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = local.public_cidr_block[count.index]
   map_public_ip_on_launch = "true"
-  availability_zone       = count.index == 0 ? "us-east-1a" : "us-east-1b"
+  availability_zone       = local.az[count.index]
 
   tags = {
     Name = "main-public-${count.index + 1}"
@@ -37,7 +38,7 @@ resource "aws_subnet" "main-private" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = local.private_cidr_block[count.index]
   map_public_ip_on_launch = "false"
-  availability_zone       = count.index == 0 ? "us-east-1a" : "us-east-1b"
+  availability_zone       = local.az[count.index]
 
   tags = {
     Name = "main-private-${count.index + 1}"
@@ -69,7 +70,7 @@ resource "aws_route_table" "main-public" {
 
 #Public subnets route table association
 resource "aws_route_table_association" "main-public" {
-  count          = 2
+  count = 2
 
   subnet_id      = aws_subnet.main-public[count.index].id
   route_table_id = aws_route_table.main-public.id
@@ -79,11 +80,11 @@ resource "aws_route_table_association" "main-public" {
 resource "aws_eip" "nat" {
   count = 2
 
-  vpc   = true
+  vpc = true
 }
 
 resource "aws_nat_gateway" "nat-gw" {
-  count         = 2
+  count = 2
 
   allocation_id = aws_eip.nat[count.index].id
   subnet_id     = aws_subnet.main-public[count.index].id
@@ -92,7 +93,7 @@ resource "aws_nat_gateway" "nat-gw" {
 
 #Private route table
 resource "aws_route_table" "main-private" {
-  count  = 2
+  count = 2
 
   vpc_id = aws_vpc.main.id
 
@@ -108,7 +109,7 @@ resource "aws_route_table" "main-private" {
 
 #Private subnets route association
 resource "aws_route_table_association" "main-private" {
-  count          = 2
+  count = 2
 
   subnet_id      = aws_subnet.main-private[count.index].id
   route_table_id = aws_route_table.main-private[count.index].id
