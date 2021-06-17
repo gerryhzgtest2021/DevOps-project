@@ -13,7 +13,7 @@ resource "aws_vpc" "main" {
 
 #Subnets
 resource "aws_subnet" "main-public" {
-  count = var.public_number
+  count = length(var.public_cidr_block)
 
   vpc_id                  = aws_vpc.main.id
   cidr_block              = var.public_cidr_block[count.index]
@@ -26,7 +26,7 @@ resource "aws_subnet" "main-public" {
 }
 
 resource "aws_subnet" "main-private" {
-  count = var.private_number
+  count = length(var.private_cidr_block)
 
   vpc_id                  = aws_vpc.main.id
   cidr_block              = var.private_cidr_block[count.index]
@@ -63,7 +63,7 @@ resource "aws_route_table" "main-public" {
 
 #Public subnets route table association
 resource "aws_route_table_association" "main-public" {
-  count = var.public_number
+  count = length(var.public_cidr_block)
 
   subnet_id      = aws_subnet.main-public[count.index].id
   route_table_id = aws_route_table.main-public.id
@@ -71,13 +71,13 @@ resource "aws_route_table_association" "main-public" {
 
 #NAT GW
 resource "aws_eip" "nat" {
-  count = var.private_number
+  count = length(var.private_cidr_block)
 
   vpc = true
 }
 
 resource "aws_nat_gateway" "nat-gw" {
-  count = var.private_number
+  count = length(var.private_cidr_block)
 
   allocation_id = aws_eip.nat[count.index].id
   subnet_id     = aws_subnet.main-public[count.index].id
@@ -86,7 +86,7 @@ resource "aws_nat_gateway" "nat-gw" {
 
 #Private route table
 resource "aws_route_table" "main-private" {
-  count = var.private_number
+  count = length(var.private_cidr_block)
 
   vpc_id = aws_vpc.main.id
 
@@ -102,7 +102,7 @@ resource "aws_route_table" "main-private" {
 
 #Private subnets route association
 resource "aws_route_table_association" "main-private" {
-  count = var.private_number
+  count = length(var.private_cidr_block)
 
   subnet_id      = aws_subnet.main-private[count.index].id
   route_table_id = aws_route_table.main-private[count.index].id
