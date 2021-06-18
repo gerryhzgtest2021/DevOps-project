@@ -7,7 +7,7 @@ resource "aws_vpc" "main" {
   enable_classiclink   = "false"
 
   tags = {
-    Name = "main"
+    Name = var.env_code
   }
 }
 
@@ -21,7 +21,7 @@ resource "aws_subnet" "main-public" {
   availability_zone       = var.az[count.index]
 
   tags = {
-    Name = "main-public-${count.index + 1}"
+    Name = "${var.env_code}-public-${count.index + 1}"
   }
 }
 
@@ -34,7 +34,7 @@ resource "aws_subnet" "main-private" {
   availability_zone       = var.az[count.index]
 
   tags = {
-    Name = "main-private-${count.index + 1}"
+    Name = "${var.env_code}-private-${count.index + 1}"
   }
 }
 
@@ -43,7 +43,7 @@ resource "aws_internet_gateway" "main-gw" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "main"
+    Name = var.env_code
   }
 }
 
@@ -57,7 +57,7 @@ resource "aws_route_table" "main-public" {
   }
 
   tags = {
-    Name = "main-public"
+    Name = "${var.env_code}-public"
   }
 }
 
@@ -81,7 +81,7 @@ resource "aws_nat_gateway" "nat-gw" {
 
   allocation_id = aws_eip.nat[count.index].id
   subnet_id     = aws_subnet.main-public[count.index].id
-  depends_on    = ["aws_internet_gateway.main-gw"]
+  depends_on    = [aws_internet_gateway.main-gw]
 }
 
 #Private route table
@@ -96,7 +96,7 @@ resource "aws_route_table" "main-private" {
   }
 
   tags = {
-    Name = "main-private-${count.index + 1}"
+    Name = "${var.env_code}-private-${count.index + 1}"
   }
 }
 
