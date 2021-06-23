@@ -13,7 +13,7 @@ module "vpc" {
 #aws keypair
 resource "aws_key_pair" "mykeypair" {
   key_name   = "mykeypair"
-  public_key = "mykey.pub"
+  public_key = "./modules/elb_auto/mykey.pub"
 }
 #security groups
 resource "aws_security_group" "myinstance" {
@@ -83,7 +83,7 @@ resource "aws_launch_configuration" "example-launchconfig" {
 #auto scaling group
 resource "aws_autoscaling_group" "example-autoscaling" {
   name                      = "example-autoscaling"
-  vpc_zone_identifier       = [module.vpc.vpc_public_subnet_id]
+  vpc_zone_identifier       = module.vpc.vpc_public_subnet_id
   launch_configuration      = aws_launch_configuration.example-launchconfig.name
   max_size                  = 2
   min_size                  = 2
@@ -102,7 +102,7 @@ resource "aws_autoscaling_group" "example-autoscaling" {
 #elb
 resource "aws_elb" "my-elb" {
   name            = "my-elb"
-  subnets         = [module.vpc.vpc_public_subnet_id]
+  subnets         = module.vpc.vpc_public_subnet_id
   security_groups = [aws_security_group.elb-securitygroup.id]
 
   listener {
