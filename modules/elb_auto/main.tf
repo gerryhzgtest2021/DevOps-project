@@ -1,24 +1,11 @@
-provider "aws" {
-  region = var.AWS_REGION
+resource "aws_key_pair" "example-keypair" {
+  key_name   = "${var.env_code}-keypair"
+  public_key = file("./modules/elb_auto/mykey.pub")
 }
-#call vpc module
-module "vpc" {
-  source             = "../vpc"
-  az                 = ["us-east-1a", "us-east-1b"]
-  env_code           = "main"
-  private_cidr_block = ["10.0.2.0/24", "10.0.3.0/24"]
-  public_cidr_block  = ["10.0.0.0/24", "10.0.1.0/24"]
-  vpc_cidr_block     = "10.0.0.0/16"
-}
-#aws keypair
-resource "aws_key_pair" "mykeypair" {
-  key_name   = "mykeypair"
-  public_key = "./modules/elb_auto/mykey.pub"
-}
-#security groups
-resource "aws_security_group" "myinstance" {
-  vpc_id      = module.vpc.vpc_id
-  name        = "myinstance"
+
+resource "aws_security_group" "example-instance" {
+  vpc_id      = var.vpc_id
+  name        = "${var.env_code}-instance"
   description = "security group for my instance"
 
   egress {
@@ -30,9 +17,9 @@ resource "aws_security_group" "myinstance" {
 
   ingress {
     from_port   = 22
-    protocol    = "tpc"
+    protocol    = "tcp"
     to_port     = 22
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["76.185.25.233/32"]
   }
   ingress {
     from_port       = 80
@@ -42,13 +29,13 @@ resource "aws_security_group" "myinstance" {
   }
 
   tags = {
-    Name = "myinstance"
+    Name = "${var.env_code}-instance"
   }
 }
 
 resource "aws_security_group" "elb-securitygroup" {
-  vpc_id      = module.vpc.vpc_id
-  name        = "ELB"
+  vpc_id      = var.vpc_id
+  name        = "${var.env_code}-ELB"
   description = "security group for load balancer"
 
   egress {
@@ -62,34 +49,37 @@ resource "aws_security_group" "elb-securitygroup" {
     from_port   = 80
     protocol    = "tcp"
     to_port     = 80
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["76.185.25.233/32"]
   }
 
   tags = {
-    Name = "ELB"
+    Name = "${var.env_code}-ELB"
   }
 }
 
-#launch configuration
-resource "aws_launch_configuration" "example-launchconfig" {
-  name_prefix     = "example-launchconfig"
-  image_id        = lookup(var.AMIS, var.AWS_REGION)
-  instance_type   = "t2.micro"
-  key_name        = aws_key_pair.mykeypair.key_name
-  security_groups = [aws_security_group.myinstance.id]
-  user_data       = "#!/bin/bash\nmkdir git_clone\ncd git_clone\ngit clone https://github.com/gabrielecirulli/2048\nsudo yum update -y\nsudo yum install -y httpd\ncp . /var/www/html/\nsudo systemctl start httpd\nsudo systemctl enable httpd"
+data "aws_ami" "sample" {
+  owners     = ["amazon"]
+  name_regex = "amzn2-ami-hvm-2\\.0\\.20210525\\.0-x86_64-gp2"
 }
 
-#auto scaling group
+resource "aws_launch_configuration" "example-launchconfig" {
+  name_prefix     = "${var.env_code}-launchconfig"
+  image_id        = data.aws_ami.sample.id
+  instance_type   = "t2.micro"
+  key_name        = aws_key_pair.example-keypair.key_name
+  security_groups = [aws_security_group.example-instance.id]
+  user_data       = file("./modules/elb_auto/user_data.sh")
+}
+
 resource "aws_autoscaling_group" "example-autoscaling" {
-  name                      = "example-autoscaling"
-  vpc_zone_identifier       = module.vpc.vpc_public_subnet_id
+  name                      = "${var.env_code}-autoscaling"
+  vpc_zone_identifier       = var.vpc_public_subnet_id
   launch_configuration      = aws_launch_configuration.example-launchconfig.name
   max_size                  = 2
   min_size                  = 2
   health_check_grace_period = 300
   health_check_type         = "ELB"
-  load_balancers            = [aws_elb.my-elb.name]
+  load_balancers            = [aws_elb.example-elb.name]
   force_delete              = true
 
   tag {
@@ -99,10 +89,9 @@ resource "aws_autoscaling_group" "example-autoscaling" {
   }
 }
 
-#elb
-resource "aws_elb" "my-elb" {
-  name            = "my-elb"
-  subnets         = module.vpc.vpc_public_subnet_id
+resource "aws_elb" "example-elb" {
+  name            = "${var.env_code}-elb"
+  subnets         = var.vpc_public_subnet_id
   security_groups = [aws_security_group.elb-securitygroup.id]
 
   listener {
@@ -125,6 +114,6 @@ resource "aws_elb" "my-elb" {
   connection_draining_timeout = 400
 
   tags = {
-    Name = "my-elb"
+    Name = "${var.env_code}-elb"
   }
 }

@@ -5,3 +5,4 @@
 ./modules/elb_auto/.terraform
 ./modules/elb_auto/.terraform.lock.hcl
 mykey
+terraform.tfstate
