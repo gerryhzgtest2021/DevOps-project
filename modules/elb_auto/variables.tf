@@ -10,3 +10,4 @@ variable "env_code" {
   description = "The name of the environment"
   type        = string
 }
+variable "vpc_cidr" {}
