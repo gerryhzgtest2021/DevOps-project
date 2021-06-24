@@ -21,5 +21,6 @@ module "elb" {
   AWS_REGION = local.aws_region
   vpc_id = module.vpc.vpc_id
   vpc_public_subnet_id = module.vpc.vpc_public_subnet_id
+  vpc_private_subnet_id = module.vpc.vpc_private_subnet_id
   env_code = "example"
 }

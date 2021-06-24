@@ -73,7 +73,7 @@ resource "aws_launch_configuration" "example-launchconfig" {
 
 resource "aws_autoscaling_group" "example-autoscaling" {
   name                      = "${var.env_code}-autoscaling"
-  vpc_zone_identifier       = var.vpc_public_subnet_id
+  vpc_zone_identifier       = var.vpc_private_subnet_id
   launch_configuration      = aws_launch_configuration.example-launchconfig.name
   max_size                  = 2
   min_size                  = 2

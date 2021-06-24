@@ -6,3 +6,4 @@
 ./modules/elb_auto/.terraform.lock.hcl
 mykey
 terraform.tfstate
+terraform.tfstate.backup
