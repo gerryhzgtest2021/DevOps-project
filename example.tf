@@ -23,4 +23,5 @@ module "elb" {
   vpc_public_subnet_id = module.vpc.vpc_public_subnet_id
   vpc_private_subnet_id = module.vpc.vpc_private_subnet_id
   env_code = "example"
+  vpc_cidr = module.vpc.vpc_cidr
 }

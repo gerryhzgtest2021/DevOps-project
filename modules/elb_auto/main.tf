@@ -27,6 +27,12 @@ resource "aws_security_group" "example-instance" {
     to_port         = 80
     security_groups = [aws_security_group.elb-securitygroup.id]
   }
+  ingress {
+    from_port   = 0
+    protocol    = "-1"
+    to_port     = 0
+    cidr_blocks = [var.vpc_cidr]
+  }
 
   tags = {
     Name = "${var.env_code}-instance"
@@ -72,15 +78,13 @@ resource "aws_launch_configuration" "example-launchconfig" {
 }
 
 resource "aws_autoscaling_group" "example-autoscaling" {
-  name                      = "${var.env_code}-autoscaling"
-  vpc_zone_identifier       = var.vpc_private_subnet_id
-  launch_configuration      = aws_launch_configuration.example-launchconfig.name
-  max_size                  = 2
-  min_size                  = 2
-  health_check_grace_period = 300
-  health_check_type         = "ELB"
-  load_balancers            = [aws_elb.example-elb.name]
-  force_delete              = true
+  name                 = "${var.env_code}-autoscaling"
+  vpc_zone_identifier  = var.vpc_private_subnet_id
+  launch_configuration = aws_launch_configuration.example-launchconfig.name
+  max_size             = 2
+  min_size             = 2
+  load_balancers       = [aws_elb.example-elb.name]
+  force_delete         = true
 
   tag {
     key                 = "Name"
