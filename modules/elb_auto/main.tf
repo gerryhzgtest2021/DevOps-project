@@ -1,6 +1,10 @@
+data "aws_secretsmanager_secret" "ec2_public_key" {
+  arn = "arn:aws:secretsmanager:us-east-1:976614466134:secret:public_key_for_ec2-ebmj3R"
+}
+
 resource "aws_key_pair" "example-keypair" {
   key_name   = "${var.env_code}-keypair"
-  public_key = file("./modules/elb_auto/mykey.pub")
+  public_key = data.aws_secretsmanager_secret.ec2_public_key
 }
 
 resource "aws_security_group" "example-instance" {
