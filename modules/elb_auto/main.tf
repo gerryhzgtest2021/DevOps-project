@@ -1,6 +1,45 @@
+data "aws_secretsmanager_secret" "ec2_public_key" {
+  arn = "arn:aws:secretsmanager:us-east-1:976614466134:secret:public_key_for_ec2-ebmj3R"
+}
+
+data "aws_secretsmanager_secret_version" "ec2_public_key" {
+  secret_id = data.aws_secretsmanager_secret.ec2_public_key.id
+}
+
+locals {
+  ec2_public_key = jsondecode(data.aws_secretsmanager_secret_version.ec2_public_key.secret_string)["public_key"]
+}
+
 resource "aws_key_pair" "example-keypair" {
   key_name   = "${var.env_code}-keypair"
-  public_key = file("./modules/elb_auto/mykey.pub")
+  public_key = local.ec2_public_key
+}
+
+resource "aws_iam_role" "ec2-iam-role" {
+  name = "ec2-iam-role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      },
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ssm-ec2-role-attachment" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  role       = aws_iam_role.ec2-iam-role.name
+}
+
+resource "aws_iam_instance_profile" "ssm-ec2-role-instance-profile" {
+  name = "ssm-ec2-role"
+  role = aws_iam_role.ec2-iam-role.name
 }
 
 resource "aws_security_group" "example-instance" {
@@ -15,12 +54,6 @@ resource "aws_security_group" "example-instance" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  ingress {
-    from_port   = 22
-    protocol    = "tcp"
-    to_port     = 22
-    cidr_blocks = ["76.185.25.233/32"]
-  }
   ingress {
     from_port       = 80
     protocol        = "tcp"
@@ -69,12 +102,13 @@ data "aws_ami" "sample" {
 }
 
 resource "aws_launch_configuration" "example-launchconfig" {
-  name_prefix     = "${var.env_code}-launchconfig"
-  image_id        = data.aws_ami.sample.id
-  instance_type   = "t2.micro"
-  key_name        = aws_key_pair.example-keypair.key_name
-  security_groups = [aws_security_group.example-instance.id]
-  user_data       = file("./modules/elb_auto/user_data.sh")
+  name_prefix          = "${var.env_code}-launchconfig"
+  image_id             = data.aws_ami.sample.id
+  instance_type        = "t2.micro"
+  key_name             = aws_key_pair.example-keypair.key_name
+  security_groups      = [aws_security_group.example-instance.id]
+  user_data            = file("./modules/elb_auto/user_data.sh")
+  iam_instance_profile = aws_iam_instance_profile.ssm-ec2-role-instance-profile.name
 }
 
 resource "aws_autoscaling_group" "example-autoscaling" {
