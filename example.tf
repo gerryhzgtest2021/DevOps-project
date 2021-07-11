@@ -18,10 +18,19 @@ module "vpc" {
 module "elb" {
   source = "./modules/elb_auto"
 
-  AWS_REGION = local.aws_region
-  vpc_id = module.vpc.vpc_id
-  vpc_public_subnet_id = module.vpc.vpc_public_subnet_id
+  AWS_REGION            = local.aws_region
+  vpc_id                = module.vpc.vpc_id
+  vpc_public_subnet_id  = module.vpc.vpc_public_subnet_id
   vpc_private_subnet_id = module.vpc.vpc_private_subnet_id
-  env_code = "example"
-  vpc_cidr = module.vpc.vpc_cidr
+  env_code              = "example"
+  vpc_cidr              = module.vpc.vpc_cidr
+}
+
+module "rds" {
+  source = "./modules/rds"
+
+  db-subnet-ids = module.vpc.vpc_private_subnet_id
+  db-vpc-id     = module.vpc.vpc_id
+  multi-az      = false
+  vpc_cidr      = module.vpc.vpc_cidr
 }
