@@ -30,7 +30,7 @@ resource "aws_security_group" "allow-mysql" {
     from_port   = 3306
     protocol    = "tcp"
     to_port     = 3306
-    cidr_blocks = var.vpc_cidr
+    cidr_blocks = [var.vpc_cidr]
   }
   egress {
     from_port   = 0
@@ -56,7 +56,7 @@ resource "aws_db_instance" "mysqldb" {
   db_subnet_group_name    = aws_db_subnet_group.mysql-subnet.name
   parameter_group_name    = aws_db_parameter_group.mysql-parameters.name
   multi_az                = var.multi-az
-  vpc_security_group_ids  = aws_db_subnet_group.mysql-subnet.id
+  vpc_security_group_ids  = [aws_security_group.allow-mysql.id]
   storage_type            = "gp2"
   backup_retention_period = 7
 
