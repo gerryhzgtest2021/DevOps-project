@@ -8,3 +8,4 @@ mykey
 terraform.tfstate
 terraform.tfstate.backup
 ./modules/elb_auto/mykey.pub
+./modules/rds/.idea
