@@ -33,4 +33,5 @@ module "rds" {
   db-vpc-id     = module.vpc.vpc_id
   multi-az      = false
   vpc_cidr      = module.vpc.vpc_cidr
+  env_code      = "mysql"
 }

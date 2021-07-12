@@ -10,7 +10,12 @@ variable "db-vpc-id" {
 
 variable "multi-az" {
   description = "Whether deploy multi-az"
-  type = bool
+  type        = bool
 }
 
 variable "vpc_cidr" {}
+
+variable "env_code" {
+  description = "The name of the environment"
+  type        = string
+}

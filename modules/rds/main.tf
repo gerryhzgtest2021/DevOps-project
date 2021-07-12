@@ -11,21 +11,21 @@ locals {
 }
 
 resource "aws_db_parameter_group" "mysql-parameters" {
-  name        = "mysql-parameters"
+  name        = "${var.env_code}-parameters"
   family      = "mysql8.0"
-  description = "mysql parameters group"
+  description = "${var.env_code} parameters group"
 }
 
 resource "aws_db_subnet_group" "mysql-subnet" {
-  name        = "mysql-subnet"
-  description = "mysql subnet group"
+  name        = "${var.env_code}-subnet"
+  description = "${var.env_code} subnet group"
   subnet_ids  = var.db-subnet-ids
 }
 
 resource "aws_security_group" "allow-mysql" {
   vpc_id      = var.db-vpc-id
-  name        = "allow-mysql"
-  description = "allow-mysql-access"
+  name        = "allow-${var.env_code}"
+  description = "allow-${var.env_code}-access"
   ingress {
     from_port   = 3306
     protocol    = "tcp"
@@ -40,7 +40,7 @@ resource "aws_security_group" "allow-mysql" {
     self        = true #(Optional) Whether the security group itself will be added as a source to this egress rule.
   }
   tags = {
-    Name = "allow-mysql"
+    Name = "allow-${var.env_code}"
   }
 }
 
@@ -49,8 +49,8 @@ resource "aws_db_instance" "mysqldb" {
   engine                  = "MySQL"
   engine_version          = "8.0.23"
   instance_class          = "db.t2.micro"
-  identifier              = "mysqldb"
-  name                    = "mysqldb"
+  identifier              = "${var.env_code}db"
+  name                    = "${var.env_code}db"
   username                = "root"
   password                = local.db-password
   db_subnet_group_name    = aws_db_subnet_group.mysql-subnet.name
@@ -59,8 +59,9 @@ resource "aws_db_instance" "mysqldb" {
   vpc_security_group_ids  = [aws_security_group.allow-mysql.id]
   storage_type            = "gp2"
   backup_retention_period = 7
+  skip_final_snapshot     = true
 
   tags = {
-    Name = "mysqldb-instance"
+    Name = "${var.env_code}db-instance"
   }
 }
