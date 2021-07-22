@@ -6,6 +6,14 @@ data "aws_secretsmanager_secret_version" "ec2_public_key" {
   secret_id = data.aws_secretsmanager_secret.ec2_public_key.id
 }
 
+data "template_file" "user_data" {
+  template = file("${path.module}/user_data.tpl")
+  vars = {
+    wordpress_conf = file("${path.module}/wordpress_conf.txt")
+    localhost_php  = file("${path.module}/localhost_php.txt")
+  }
+}
+
 locals {
   ec2_public_key = jsondecode(data.aws_secretsmanager_secret_version.ec2_public_key.secret_string)["public_key"]
 }
@@ -107,7 +115,7 @@ resource "aws_launch_configuration" "example-launchconfig" {
   instance_type        = "t2.micro"
   key_name             = aws_key_pair.example-keypair.key_name
   security_groups      = [aws_security_group.example-instance.id]
-  user_data            = file("./modules/elb_auto/user_data.sh")
+  user_data            = file("./modules/elb_auto/user_data.tpl")
   iam_instance_profile = aws_iam_instance_profile.ssm-ec2-role-instance-profile.name
 }
 
