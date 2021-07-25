@@ -149,8 +149,8 @@ resource "aws_elb" "example-elb" {
 
   health_check {
     healthy_threshold   = 2
-    interval            = 30
-    target              = "HTTP:80/"
+    interval            = 5
+    target              = "tcp:80"
     timeout             = 3
     unhealthy_threshold = 2
   }
