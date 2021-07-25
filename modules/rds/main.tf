@@ -1,14 +1,14 @@
-data "aws_secretsmanager_secret" "db-password" {
-  arn = "arn:aws:secretsmanager:us-east-1:976614466134:secret:password_for_db-RYgwyw"
-}
+# data "aws_secretsmanager_secret" "db-password" {
+#   arn = "arn:aws:secretsmanager:us-east-1:976614466134:secret:password_for_db-RYgwyw"
+# }
 
-data "aws_secretsmanager_secret_version" "db-password" {
-  secret_id = data.aws_secretsmanager_secret.db-password.id
-}
+# data "aws_secretsmanager_secret_version" "db-password" {
+#   secret_id = data.aws_secretsmanager_secret.db-password.id
+# }
 
-locals {
-  db-password = jsondecode(data.aws_secretsmanager_secret_version.db-password.secret_string)["password"]
-}
+# locals {
+#   db-password = jsondecode(data.aws_secretsmanager_secret_version.db-password.secret_string)["password"]
+# }
 
 resource "aws_db_parameter_group" "mysql-parameters" {
   name        = "${var.env_code}-parameters"
@@ -52,7 +52,8 @@ resource "aws_db_instance" "mysqldb" {
   identifier              = "${var.env_code}db"
   name                    = "${var.env_code}db"
   username                = "root"
-  password                = local.db-password
+  password                = "tempunsecurepassword"
+  # password                = local.db-password
   db_subnet_group_name    = aws_db_subnet_group.mysql-subnet.name
   parameter_group_name    = aws_db_parameter_group.mysql-parameters.name
   multi_az                = var.multi-az
