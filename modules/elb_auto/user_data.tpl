@@ -3,8 +3,7 @@ sudo yum update -y
 sudo yum install -y httpd git
 #git clone https://github.com/gabrielecirulli/2048
 #cp -R 2048/* /var/www/html/
-sudo systemctl start httpd
-sudo systemctl enable httpd
+
 sudo amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
 sudo yum install -y mariadb-server
 
@@ -22,15 +21,15 @@ find /var/www -type f -exec sudo chmod 0664 {} \;
 wget https://wordpress.org/latest.tar.gz
 tar -xzf latest.tar.gz
 sudo systemctl start mariadb
-mysql -u root -e "CREATE USER 'wordpress-user'@'localhost' IDENTIFIED BY 'your_strong_password';"
-mysql -u root -e "CREATE DATABASE `wordpress-db`;"
-mysql -u root -e "GRANT ALL PRIVILEGES ON `wordpress-db`.* TO 'wordpress-user'@'localhost';"
+mysql -u root -e "CREATE USER 'wordpress_user'@'localhost' IDENTIFIED BY 'your_strong_password';"
+mysql -u root -e "CREATE DATABASE \`wordpress_db\`;"
+mysql -u root -e "GRANT ALL PRIVILEGES ON \`wordpress_db\`.* TO 'wordpress_user'@'localhost';"
 mysql -u root -e "FLUSH PRIVILEGES;"
 git clone https://github.com/gerryhzgtest2021/share
 cp -R share/wp-config.php wordpress/wp-config.php
 sudo cp -r wordpress/* /var/www/html/
 cp -R share/httpd.conf /etc/httpd/conf/httpd.conf
-sudo yum install php-gd
+sudo yum install -y php-gd
 sudo chown -R apache /var/www
 sudo chgrp -R apache /var/www
 
@@ -42,8 +41,10 @@ find /var/www -type d -exec sudo chmod 2775 {} \;
 #Recursively change the file permissions of /var/www and its subdirectories to add
 #group write permissions.
 find /var/www -type f -exec sudo chmod 0664 {} \;
-sudo systemctl restart httpd
+
 sudo systemctl enable httpd && sudo systemctl enable mariadb
+sudo systemctl start mariadb
+sudo systemctl start httpd
 
 
 
