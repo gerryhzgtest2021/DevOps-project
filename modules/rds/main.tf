@@ -45,14 +45,15 @@ resource "aws_security_group" "allow-mysql" {
 }
 
 resource "aws_db_instance" "mysqldb" {
-  allocated_storage       = 20
-  engine                  = "MySQL"
-  engine_version          = "8.0.23"
-  instance_class          = "db.t2.micro"
-  identifier              = "${var.env_code}db"
-  name                    = "${var.env_code}db"
-  username                = "root"
-  password                = local.db-password
+  allocated_storage = 20
+  engine            = "MySQL"
+  engine_version    = "8.0.23"
+  instance_class    = "db.t2.micro"
+  identifier        = "${var.env_code}db"
+  name              = "${var.env_code}db"
+  username          = "root"
+  password          = local.db-password
+  #password                = "tempunsecurepassword"
   db_subnet_group_name    = aws_db_subnet_group.mysql-subnet.name
   parameter_group_name    = aws_db_parameter_group.mysql-parameters.name
   multi_az                = var.multi-az
