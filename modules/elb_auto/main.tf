@@ -117,14 +117,40 @@ resource "aws_launch_configuration" "example-launchconfig" {
   security_groups      = [aws_security_group.example-instance.id]
   user_data            = file("./modules/elb_auto/user_data.tpl")
   iam_instance_profile = aws_iam_instance_profile.ssm-ec2-role-instance-profile.name
+
+	user_data = <<-EOF
+#!/bin/bash
+
+echo hello
+yum update -y
+yum install -y httpd git php-gd
+amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
+
+
+
+wget https://wordpress.org/latest.tar.gz
+tar -xzf latest.tar.gz
+
+git clone https://github.com/gerryhzgtest2021/share
+cp -R share/wp-config.php wordpress/wp-config.php
+cp -r wordpress/* /var/www/html/
+rm -rf /etc/httpd/conf/httpd.conf
+cp -R share/httpd.conf /etc/httpd/conf/httpd.conf
+
+chown -R apache /var/www
+chmod -R 700 /var/www
+
+systemctl start httpd && systemctl enable httpd
+EOF
+
 }
 
 resource "aws_autoscaling_group" "example-autoscaling" {
   name                 = "${var.env_code}-autoscaling"
   vpc_zone_identifier  = var.vpc_private_subnet_id
   launch_configuration = aws_launch_configuration.example-launchconfig.name
-  max_size             = 2
-  min_size             = 2
+  max_size             = 1
+  min_size             = 1
   load_balancers       = [aws_elb.example-elb.name]
   force_delete         = true
 
@@ -149,8 +175,8 @@ resource "aws_elb" "example-elb" {
 
   health_check {
     healthy_threshold   = 2
-    interval            = 30
-    target              = "HTTP:80/"
+    interval            = 5
+    target              = "tcp:80"
     timeout             = 3
     unhealthy_threshold = 2
   }

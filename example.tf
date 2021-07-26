@@ -26,7 +26,7 @@ module "elb" {
   vpc_cidr              = module.vpc.vpc_cidr
 }
 
-/*module "rds" {
+module "rds" {
   source = "./modules/rds"
 
   db-subnet-ids = module.vpc.vpc_private_subnet_id
@@ -34,5 +34,5 @@ module "elb" {
   multi-az      = false
   vpc_cidr      = module.vpc.vpc_cidr
   env_code      = "mysql"
-}*/
+}
 
