@@ -1,3 +1,3 @@
-output "de_endpoint" {
-  value = module.rds.db_endpoint
+output "de_address" {
+  value = module.rds.db_address
 }

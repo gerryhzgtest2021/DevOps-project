@@ -26,6 +26,7 @@ module "elb" {
   vpc_cidr              = module.vpc.vpc_cidr
   db_password           = module.rds.db_password
   db_endpoint           = module.rds.db_endpoint
+  db_address            = module.rds.db_address
 }
 
 module "rds" {

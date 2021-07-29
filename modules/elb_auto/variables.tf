@@ -17,3 +17,6 @@ variable "db_password" {
 variable "db_endpoint" {
   default = ""
 }
+variable "db_address" {
+  default = ""
+}
