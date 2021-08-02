@@ -6,6 +6,16 @@ data "aws_secretsmanager_secret_version" "ec2_public_key" {
   secret_id = data.aws_secretsmanager_secret.ec2_public_key.id
 }
 
+data "template_file" "user_data" {
+  template = file("${path.module}/user_data.tpl")
+  vars = {
+    wordpress_conf = file("${path.module}/wordpress_conf.txt")
+    localhost_php  = file("${path.module}/localhost_php.txt")
+    db_password    = var.db_password
+    db_address     = var.db_address
+  }
+}
+
 locals {
   ec2_public_key = jsondecode(data.aws_secretsmanager_secret_version.ec2_public_key.secret_string)["public_key"]
 }
@@ -107,7 +117,7 @@ resource "aws_launch_configuration" "example-launchconfig" {
   instance_type        = "t2.micro"
   key_name             = aws_key_pair.example-keypair.key_name
   security_groups      = [aws_security_group.example-instance.id]
-  user_data            = file("./modules/elb_auto/user_data.sh")
+  user_data            = templatefile("${path.module}/user_data.tpl", { db_password = var.db_password, db_address = var.db_address })
   iam_instance_profile = aws_iam_instance_profile.ssm-ec2-role-instance-profile.name
 }
 
@@ -115,8 +125,8 @@ resource "aws_autoscaling_group" "example-autoscaling" {
   name                 = "${var.env_code}-autoscaling"
   vpc_zone_identifier  = var.vpc_private_subnet_id
   launch_configuration = aws_launch_configuration.example-launchconfig.name
-  max_size             = 2
-  min_size             = 2
+  max_size             = 1
+  min_size             = 1
   load_balancers       = [aws_elb.example-elb.name]
   force_delete         = true
 
@@ -141,8 +151,8 @@ resource "aws_elb" "example-elb" {
 
   health_check {
     healthy_threshold   = 2
-    interval            = 30
-    target              = "HTTP:80/"
+    interval            = 5
+    target              = "tcp:80"
     timeout             = 3
     unhealthy_threshold = 2
   }

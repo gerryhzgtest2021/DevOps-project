@@ -11,3 +11,12 @@ variable "env_code" {
   description = "The name of the environment"
   type        = string
 }
+variable "db_password" {
+  default = ""
+}
+variable "db_endpoint" {
+  default = ""
+}
+variable "db_address" {
+  default = ""
+}
