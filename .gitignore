@@ -1,11 +1,6 @@
 .terraform.lock.hcl
 .terraform
 .idea
-./modules/elb_auto/.idea
-./modules/elb_auto/.terraform
-./modules/elb_auto/.terraform.lock.hcl
 mykey
 terraform.tfstate
 terraform.tfstate.backup
-./modules/elb_auto/mykey.pub
-./modules/rds/.idea
