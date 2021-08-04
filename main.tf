@@ -12,9 +12,10 @@ data "aws_ami" "sample" {
 }
 
 locals {
-  aws_region     = "us-east-1"
-  db-password    = jsondecode(data.aws_secretsmanager_secret_version.db-password.secret_string)["password"]
-  env_code_elb   = "example"
+  aws_region   = "us-east-1"
+  db-password  = jsondecode(data.aws_secretsmanager_secret_version.db-password.secret_string)["password"]
+  env_code_elb = "example"
+  local_ip     = "76.185.25.233/32"
 }
 
 provider "aws" {
@@ -69,7 +70,7 @@ module "elb-securitygroup" {
       from_port   = 80
       to_port     = 80
       protocol    = "tcp"
-      cidr_blocks = "76.185.25.233/32"
+      cidr_blocks = local.local_ip
     },
   ]
 
