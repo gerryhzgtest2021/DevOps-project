@@ -6,14 +6,6 @@ data "aws_secretsmanager_secret_version" "db-password" {
   secret_id = data.aws_secretsmanager_secret.db-password.id
 }
 
-data "aws_secretsmanager_secret" "ec2_public_key" {
-  arn = "arn:aws:secretsmanager:us-east-1:976614466134:secret:public_key_for_ec2-ebmj3R"
-}
-
-data "aws_secretsmanager_secret_version" "ec2_public_key" {
-  secret_id = data.aws_secretsmanager_secret.ec2_public_key.id
-}
-
 data "aws_ami" "sample" {
   owners     = ["amazon"]
   name_regex = "amzn2-ami-hvm-2\\.0\\.20210525\\.0-x86_64-gp2"
@@ -22,7 +14,6 @@ data "aws_ami" "sample" {
 locals {
   aws_region     = "us-east-1"
   db-password    = jsondecode(data.aws_secretsmanager_secret_version.db-password.secret_string)["password"]
-  ec2_public_key = jsondecode(data.aws_secretsmanager_secret_version.ec2_public_key.secret_string)["public_key"]
   env_code_elb   = "example"
 }
 
