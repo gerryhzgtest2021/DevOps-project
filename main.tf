@@ -180,8 +180,8 @@ module "autoscaling" {
   # insert the 56 required variables here
   name                      = "example"
   min_size                  = 1
-  max_size                  = 1
-  desired_capacity          = 1
+  max_size                  = 2
+  desired_capacity          = 2
   wait_for_capacity_timeout = 0
   load_balancers            = [module.elb_http.this_elb_name]
   health_check_type         = "ELB"
