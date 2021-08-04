@@ -1,5 +1,7 @@
+data "aws_caller_identity" "current" {}
+
 data "aws_secretsmanager_secret" "db-password" {
-  arn = "arn:aws:secretsmanager:us-east-1:976614466134:secret:password_for_db-RYgwyw"
+  arn = "arn:aws:secretsmanager:us-east-1:${data.aws_caller_identity.current.account_id}:secret:password_for_db-RYgwyw"
 }
 
 data "aws_secretsmanager_secret_version" "db-password" {
