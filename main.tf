@@ -235,3 +235,9 @@ module "elb_http" {
     Name = "${local.env_code_elb}-elb"
   }
 }
+
+module "eks" {
+  source = "./modules/eks/"
+  vpc_id = module.vpc.vpc_id
+  vpc_public_subnet_ids = module.vpc.public_subnets
+}
