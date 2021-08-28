@@ -1,5 +1,7 @@
+data "aws_caller_identity" "current" {}
+
 data "aws_secretsmanager_secret" "db-password" {
-  arn = "arn:aws:secretsmanager:us-east-1:976614466134:secret:password_for_db-RYgwyw"
+  arn = "arn:aws:secretsmanager:us-east-1:${data.aws_caller_identity.current.account_id}:secret:password_for_db"
 }
 
 data "aws_secretsmanager_secret_version" "db-password" {
@@ -178,8 +180,8 @@ module "autoscaling" {
   # insert the 56 required variables here
   name                      = "example"
   min_size                  = 1
-  max_size                  = 1
-  desired_capacity          = 1
+  max_size                  = 2
+  desired_capacity          = 2
   wait_for_capacity_timeout = 0
   load_balancers            = [module.elb_http.this_elb_name]
   health_check_type         = "ELB"
